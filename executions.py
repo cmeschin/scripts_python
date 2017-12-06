@@ -1,7 +1,7 @@
 import sys, getopt
 import logging
 import time
-import urllib
+from urllib import request as urllib2
 from xml.etree import ElementTree as ET
 
 #CONSTANTS
@@ -10,8 +10,8 @@ RDK_EXECUTIONS_EP = '1/job/$jobId/executions'
 
 class Execution(object):
     def __init__(self, executionId, jobName, url, status, startedAt, failedNodes=[]):
-        self.executionId = executionId 
-	self.jobName = jobName
+        self.executionId = executionId
+        self.jobName = jobName
         self.url = url
         self.status = status
         self.startedAt = startedAt
@@ -31,94 +31,100 @@ def parse_exec(node):
 def parse_execution(authToken, jobId, limit):
 
     apiUrl = RDK_ROOT_API_URL \
-           + RDK_EXECUTIONS_EP.replace('$jobId', jobId) \
-           + '?authtoken=' + authToken \
-           + '&max=' + limit
+             + RDK_EXECUTIONS_EP.replace('$jobId', jobId) \
+             + '?authtoken=' + authToken \
+             + '&max=' + limit
     logging.debug('Calling ' + apiUrl)
     root = query_api(apiUrl)
     return [parse_exec(node) for node in root.iter('execution')]
 
 def query_api(apiUrl):
-    xmlDocument = ET.parse(urllib.urlopen(apiUrl)).getroot()
+    xmlDocument = ET.parse(urllib2.urlopen(apiUrl)).getroot()
     return xmlDocument
 
 def main(argv):
-   action = ''
-   authToken = ''
-   jobId = ''
-   try:
-      opts, args = getopt.getopt(argv,"ha:c:j:i:ll:t:w:",["action=","critical=","job=","limit=","log-level=","token=","warning="])
-   except getopt.GetoptError:
-      print 'executions.py -a <action> -j <jobId> -l <limit> -t <token>'
-      sys.exit(2)
-   for opt, arg in opts:
-      if opt == '-h':
-         print 'executions.py -a <action> -j <jobId> -l <limit> -t <token>'
-         sys.exit()
-      elif opt in ("-a", "--action"):
-         action = arg
-      elif opt in ("-c", "--critical"):
-         criticalThreshold = arg
-      elif opt in ("-j", "--job"):
-         jobId = arg
-      elif opt in ("-l", "--limit"):
-         limit = arg
-      elif opt in ("-t", "--token"):
-         authToken = arg
-      elif opt in ("-ll", "--log-level"):
-         logLevel = arg
-      elif opt in ("-w", "--warning"):
-         warningThreshold = arg
+    action = ''
+    authToken = ''
+    jobId = ''
+    try:
+        opts, args = getopt.getopt(argv,"ha:c:j:i:ll:t:w:",["action=","critical=","job=","limit=","log-level=","token=","warning="])
+    except getopt.GetoptError:
+        print('INCONNU: Cas non géré: executions.py -a <action> -j <jobId> -l <limit> -t <token>')
+        sys.exit(3)
+    for opt, arg in opts:
+        if opt == '-h':
+            print('executions.py -a <action> -j <jobId> -l <limit> -t <token>')
+            sys.exit(0)
+        elif opt in ("-a", "--action"):
+            action = arg
+        elif opt in ("-c", "--critical"):
+            criticalThreshold = arg
+        elif opt in ("-j", "--job"):
+            jobId = arg
+        elif opt in ("-l", "--limit"):
+            limit = arg
+        elif opt in ("-t", "--token"):
+            authToken = arg
+        elif opt in ("-ll", "--log-level"):
+            logLevel = arg
+            numeric_level = getattr(logging, logLevel.upper(), None)
+        elif opt in ("-w", "--warning"):
+            warningThreshold = arg
 
-   if not 'logLevel' in locals():
-       logLevel = 'DEBUG'
-   numeric_level = getattr(logging, logLevel.upper(), None)
-   if not isinstance(numeric_level, int):
-       raise ValueError('Invalid log level: %s' % logLevel)
+    if not 'logLevel' in locals():
+        logLevel = 'DEBUG'
+        numeric_level = getattr(logging, logLevel.upper(), None)
 
-   logging.basicConfig(format='[%(asctime)s] - [%(levelname)s] : %(message)s', level=numeric_level)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % logLevel)
 
-   logging.debug('Action set to ' + action)
-   logging.debug('JobId set to ' + jobId)
-   logging.debug('Limit set to ' + limit)
-   logging.debug('Token set to ' + authToken)
+    logging.basicConfig(format='[%(asctime)s] - [%(levelname)s] : %(message)s', level=numeric_level)
 
-   errorsFound = 0
-   warningsFound = 0
-   runningTooLong = 0
-   runningsFound = 0 
-   if action == 'executions':
-       executions = parse_execution(authToken, jobId, limit)
-       for execution in executions:
-           currentJobName = execution.jobName
-           if execution.status == 'failed':
-               print execution.startedAt
-               errorsFound += 1
-           elif execution.status == 'aborted':
-               warningsFound += 1
-           elif execution.status == 'killed':
-               warningsFound += 1
-           elif execution.status == 'running':
-               currentTime = int(time.time())
-               runningsFound +=1  
-       if errorsFound > 0:
-           print 'CRITIQUE - Job ' + currentJobName
-           print str(errorsFound) + ' execution(s) error'
-           print str(warningsFound) + ' execution(s) killed/aborted'
-           print str(runningsFound) + ' execution(s) running'
-           for execution in executions:
-               if execution.status == 'failed':
-                   print execution
-               if execution.status == 'killed':
-                   print execution
-           sys.exit(2)
-       elif warningsFound > 0:
-           print 'WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) killed/aborted'
-       elif runningsFound > 0:
-           print 'WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) running'
-       else:
-           print 'OK - Aucune erreur pour le job ' + currentJobName
-           sys.exit(0)
+    logging.debug('Action set to ' + action)
+    logging.debug('JobId set to ' + jobId)
+    logging.debug('Limit set to ' + limit)
+    logging.debug('Token set to ' + authToken)
+
+    errorsFound = 0
+    warningsFound = 0
+    runningTooLong = 0
+    runningsFound = 0
+    if action == 'executions':
+        executions = parse_execution(authToken, jobId, limit)
+        for execution in executions:
+            currentJobName = execution.jobName
+            if execution.status == 'failed':
+                print (execution.startedAt)
+                errorsFound += 1
+            elif execution.status == 'aborted':
+                warningsFound += 1
+            elif execution.status == 'killed':
+                warningsFound += 1
+            elif execution.status == 'running':
+                currentTime = int(time.time())
+                runningsFound +=1
+        if errorsFound > 0:
+            print('CRITIQUE - Job ' + currentJobName)
+            print( str(errorsFound) + ' execution(s) error')
+            print (str(warningsFound) + ' execution(s) killed/aborted')
+            print (str(runningsFound) + ' execution(s) running')
+            for execution in executions:
+                if execution.status == 'failed':
+                    print (execution)
+                if execution.status == 'killed':
+                    print (execution)
+            sys.exit(2)
+        elif warningsFound > 0:
+            #TODO: implémenter le code de sortie
+            print ('WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) killed/aborted')
+        elif runningsFound > 0:
+            # TODO: calculer le temps d'exécution en fonction des seuils de temps
+            # TODO:	Implémenter la notion de job Running avec seuil warning / critique. (ie warning si > 5 heures, critique si > à 8 heures)
+
+            print ('WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) running')
+        else:
+            print ('OK - Aucune erreur pour le job ' + currentJobName)
+            sys.exit(0)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

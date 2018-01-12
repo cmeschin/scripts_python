@@ -1,0 +1,3 @@
+# dossier et fichiers à ignorer
+__pycache__/
+.idea/*

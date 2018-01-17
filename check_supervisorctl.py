@@ -8,7 +8,9 @@ Launch the supervisorctl for view status process
 import os, subprocess
 
 cmd = "sudo supervisorctl status"
-path = "/supervision/resultats/" # prévoir l'utilisation du chemin relatif pour une compatibilité avec les chemin Windows
+path = "/supervision/resultats/"
+#TODO: prévoir l'utilisation du chemin relatif pour une compatibilité avec les chemin Windows
+
 supervisorctl = "status_process_supervisorctl.txt"
 status_supervisorctl = (path + supervisorctl)
 

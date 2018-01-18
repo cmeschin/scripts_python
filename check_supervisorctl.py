@@ -9,21 +9,18 @@ import os, subprocess
 
 cmd = "sudo supervisorctl status"
 path = "/supervision/resultats/"
-#TODO: prévoir l'utilisation du chemin relatif pour une compatibilité avec les chemin Windows
+#TODO: prévoir l'utilisation du chemin relatif pour une compatibilité avec les chemins Windows
 
 supervisorctl = "supervisorctl_status.txt"
 status_supervisorctl = (path + supervisorctl)
 
-#List the file in directory for delete file_status
-#TODO: Si le fichier xxxx.txt est dans le dossier /supervision/resultats/  alors le supprimer sinon lancer la commande.
-#  for root, dirs, files in os.walk(path):
-#      for filename in files:
-#          print(filename)
-#
-# os.remove(status_supervisorctl)
-
-#Launch the new file_status
-#subprocess.run(cmd= $cmd, output= $path_$status_supervisorctl)
+#List the file in directory for delete file_status and Launch for new file_status
+#TODO: Commande suppression OK ==>A tester lancer la commande.
+from pathlib import Path
+    if os.path.exists(status_supervisorctl):
+        os.remove(status_supervisorctl)
+#Tester la commande.
+    #else subprocess.run(cmd= $cmd, output= $path_$status_supervisorctl)
 
 #analyse du fichier status
 # exemple de retour pour logidoc

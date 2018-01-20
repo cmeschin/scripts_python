@@ -1,0 +1,5 @@
+beemessenger:prod_logidoc_beemessenger_esendex RUNNING    pid 12480, uptime 4:13:53
+beemessenger:prod_logidoc_beemessenger_repriserg RUNNING    pid 12474, uptime 4:13:53
+beemessenger:spool_beemessenger_batch_coriolis RUNNING    pid 12483, uptime 4:13:53
+filebeat                         STOPPED    Not started
+beemessenger:spool_beemessenger_batch_default RUNNING    pid 12472, uptime 4:13:53

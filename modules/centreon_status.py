@@ -54,7 +54,7 @@ def define_state(status):
 def exit(status, message, detail="", perfdata=""):
     """ Fonction de renvoie du message à centreon"""
     exit_return = define_state(status)
-    print(exit_return[1], exit_return[0] + ': ' + message)
+    print(exit_return[0] + ': ' + message)
     if detail != "":
         print(detail)
     if perfdata != "":

@@ -5,7 +5,7 @@ from urllib import request as urllib2
 from xml.etree import ElementTree as ET
 
 #CONSTANTS
-RDK_ROOT_API_URL = 'http://10.33.49.89:8080/rundeck_recette/api/'
+RDK_ROOT_API_URL = 'http://10.33.1.53:8080/rundeck_production/api/'
 RDK_EXECUTIONS_EP = '1/job/$jobId/executions'
 
 class Execution(object):
@@ -94,7 +94,6 @@ def main(argv):
         for execution in executions:
             currentJobName = execution.jobName
             if execution.status == 'failed':
-                print (execution.startedAt)
                 errorsFound += 1
             elif execution.status == 'aborted':
                 warningsFound += 1
@@ -104,7 +103,7 @@ def main(argv):
                 currentTime = int(time.time())
                 runningsFound +=1
         if errorsFound > 0:
-            print('CRITIQUE - Job ' + currentJobName)
+            print('CRITIQUE - ' + currentJobName + ' failed')
             print( str(errorsFound) + ' execution(s) error')
             print (str(warningsFound) + ' execution(s) killed/aborted')
             print (str(runningsFound) + ' execution(s) running')

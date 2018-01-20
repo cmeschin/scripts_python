@@ -30,7 +30,9 @@ pip-log.txt
 .mr.developer.cfg
 
 # dossier et fichiers à ignorer
-__pycache__/
+__pycache__/*
+modules/__pycache__/*
+
 =======
 #################
 ## Eclipse

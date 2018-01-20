@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, sys
+import sys
 
 """
     Module de gestion des statuts de sortie pour centreon
@@ -25,9 +25,9 @@ import os, sys
         <STATUT>: Message de sortie principal
         message détaillé
         | données de performance
-
-
 """
+
+
 def define_state(status):
     """Fonction de définition du code de sortie en fonction du statut"""
     if status == "OK":
@@ -46,20 +46,20 @@ def define_state(status):
         print("INCONNU: Statut [" + status + "] non géré.")
         print("Statuts attendus: OK WARNING CRITICAL UNKNOWN")
         sys.exit(3)
-    #print(exit_status, exit_code)
     sortie = (exit_status, exit_code)
     return sortie
 
-#fonction d'affichage des status
+
 def exit(status, message, detail="", perfdata=""):
     """ Fonction de renvoie du message à centreon"""
     exit_return = define_state(status)
-    print(exit_return[1], exit_return[0] + ': ' + message)
+    print(exit_return[0] + ': ' + message)
     if detail != "":
         print(detail)
     if perfdata != "":
         print(perfdata)
     sys.exit(exit_return[1])
+
 
 if __name__ == "__main__":
     print("-- fonction de retour des états des scripts pour centreon --")

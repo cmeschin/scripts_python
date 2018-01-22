@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """ Launch the supervisorctl for view status process
+    2018-01-22 version 1: version initiale
 """
 
 # import des modules
@@ -11,8 +12,7 @@ from modules import centreon_status
 from modules import tessi_common
 
 # definition des constantes "globales"
-# CMD = "sudo supervisorctl status"
-CMD = "cmd /c type d:\python\scripts_python\log\status.txt"
+CMD = "sudo /usr/bin/supervisorctl status"
 
 # definition des variables "globales"
 detail = ""
@@ -24,7 +24,7 @@ nbProcess = 0
 now = tessi_common.define_now()
 
 # execution de la commande et récupération du retour dans une variable
-actualState = subprocess.run(CMD, stdout=subprocess.PIPE)
+actualState = subprocess.run(CMD, shell=True, stdout=subprocess.PIPE)
 
 # analyse du fichier status
 # exemple de retour pour logidoc
@@ -37,26 +37,26 @@ actualState = subprocess.run(CMD, stdout=subprocess.PIPE)
 
 #    boucle sur chaque ligne du fichier
 # print("############## ligne:" + str(retour.stdout)[2:-1])
-lstActualState = str(actualState.stdout)[2:-1].split("\\r\\n")
+lstActualState = str(actualState.stdout)[2:-3].split("\\n")
 for line in lstActualState:
     nbProcess += 1  # comptage du nombre de process configurés
-    print("ligne lue:", line)
+    # print("ligne lue:", line)
     # découpage en trois colonnes (tabulations)
     line = ' '.join(line.split())  # supprime les espaces multiples de la chaine
-    print("ligne découpée:", line.split(" ", 2))  # on ne traite que les deux premiers espaces
+    # print("ligne découpée:", line.split(" ", 2))  # on ne traite que les deux premiers espaces
     result = line.split(" ", 2)
     # si Statut différent de RUNNING, on stock les valeurs dans un tableau listError sinon dans listRunning
     if result[1] != "RUNNING":
-        print("ALERTE !!!")
+        # print("ALERTE !!!")
         # ajout dans la variable ERROR la liste des process arrêtés
         listError += "{} {} {}\n".format(result[0], result[1], result[2])
         nbError += 1  # Comptage du nombre d'erreurs
     else:
-        print("OK")
+        # print("OK")
         # ajout dans la variable RUNNING la liste des process lancés
         listRunning += "{} {} {}\n".format(result[0], result[1], result[2])
         nbOk += 1  # Comptage du nombre de process lancés
-    print("####################")
+    # print("####################")
 
 # on traite les résultats
 # si des éléments sont contenus dans la liste listError, on sort un statut CRITIQUE
@@ -65,7 +65,7 @@ if nbError == nbProcess:
     status = "CRITICAL"
     message = "Tous les process sont arrêtés (" + str(nbError) + "/" + str(nbProcess) + ") à " + now + "!"
     detail = "Process KO:\n" + listError
-elif not nbError <= 0 & nbProcess > nbError:
+elif nbError > 0 & nbProcess > nbError:
     # s'il y a des erreurs mais en nombre inférieur au nombre total de process => WARNING
     status = "WARNING"
     message = str(nbError) + " process sur " + str(nbProcess) + " arrêté(s) à " + now + "!"

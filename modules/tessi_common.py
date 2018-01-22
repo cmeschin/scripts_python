@@ -26,7 +26,7 @@ def define_now(format="%Hh%M"):
     """ Méthode permettant de retourner une chaine de l'heure actuelle en fonction du format indiqué
         :param format: format de l'heure attendue (par défaut %Hh%M)
     """
-    now = time.strftime(format, time.gmtime())
+    now = time.strftime(format, time.localtime())
     return now
 
 

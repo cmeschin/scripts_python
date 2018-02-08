@@ -10,6 +10,10 @@ import time
     date, répertoire de résultats, etc...
     consulter http://strftime.org/ pour les format possibles
 """
+"""
+    2018-02-08 version 1: version initiale
+        - définition des fonctions basiques
+"""
 
 
 def define_result_folder():
@@ -57,9 +61,23 @@ def define_month(format="%B"):
 def define_year(format="%Y"):
     """ Méthode permettant de retourner une chaine de l'année en cours en fonction du format indiqué
             :param format: format de l'heure attendue (par défaut %Y => like 2018)
-        """
+    """
     year = datetime.datetime.now().strftime(format)
     return year
+
+
+def get_bin_python():
+    """ Méthode permettant de récupérer le chemin du binaire python
+    """
+    bin_python = sys.executable
+    return bin_python
+
+
+def get_version_python():
+    """ Méthode permettant de récupérer la version du binaire python
+    """
+    bin_python = sys.version.split(" ", 1)[0]
+    return bin_python
 
 
 if __name__ == "__main__":

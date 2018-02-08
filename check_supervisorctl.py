@@ -23,8 +23,6 @@ nbOk = 0
 nbProcess = 0
 now = tessi_common.define_now()
 
-# execution de la commande et récupération du retour dans une variable
-actualState = subprocess.run(CMD, shell=True, stdout=subprocess.PIPE)
 
 # analyse du fichier status
 # exemple de retour pour logidoc
@@ -37,7 +35,19 @@ actualState = subprocess.run(CMD, shell=True, stdout=subprocess.PIPE)
 
 #    boucle sur chaque ligne du fichier
 # print("############## ligne:" + str(retour.stdout)[2:-1])
-lstActualState = str(actualState.stdout)[2:-3].split("\\n")
+#récupération de la version de python
+version = tessi_common.get_version_python()
+
+# execution de la commande et récupération du retour dans une variable
+if version[:1] == "2":
+    actualState = subprocess.check_output(CMD, shell=True)
+
+    lstActualState = str(actualState)[:-3].split('\n')
+elif version[:1] == "3":
+    actualState = subprocess.run(CMD, shell=True, stdout=subprocess.PIPE)
+
+    lstActualState = str(actualState.stdout)[2:-3].split("\\n")
+
 for line in lstActualState:
     nbProcess += 1  # comptage du nombre de process configurés
     # print("ligne lue:", line)

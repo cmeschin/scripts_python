@@ -28,17 +28,12 @@ now = tessi_common.define_now()
 # exemple de retour pour logidoc
 # nom_process                                   |Etat      |message
 # beemessenger:prod_logidoc_beemessenger_esendex RUNNING    pid 12480, uptime 4:13:53
-# beemessenger:prod_logidoc_beemessenger_repriserg RUNNING    pid 12474, uptime 4:13:53
-# beemessenger:spool_beemessenger_batch_coriolis RUNNING    pid 12483, uptime 4:13:53
 # filebeat                         STOPPED    Not started
-# beemessenger:spool_beemessenger_batch_default RUNNING    pid 12472, uptime 4:13:53
 
-#    boucle sur chaque ligne du fichier
-# print("############## ligne:" + str(retour.stdout)[2:-1])
 #récupération de la version de python
 version = tessi_common.get_version_python()
 
-# execution de la commande et récupération du retour dans une variable
+# execution de la commande selon la version de python et récupération du retour dans une variable
 if version[:1] == "2":
     actualState = subprocess.check_output(CMD, shell=True)
 
@@ -50,23 +45,18 @@ elif version[:1] == "3":
 
 for line in lstActualState:
     nbProcess += 1  # comptage du nombre de process configurés
-    # print("ligne lue:", line)
     # découpage en trois colonnes (tabulations)
     line = ' '.join(line.split())  # supprime les espaces multiples de la chaine
-    # print("ligne découpée:", line.split(" ", 2))  # on ne traite que les deux premiers espaces
     result = line.split(" ", 2)
     # si Statut différent de RUNNING, on stock les valeurs dans un tableau listError sinon dans listRunning
     if result[1] != "RUNNING":
-        # print("ALERTE !!!")
         # ajout dans la variable ERROR la liste des process arrêtés
         listError += "{} {} {}\n".format(result[0], result[1], result[2])
         nbError += 1  # Comptage du nombre d'erreurs
     else:
-        # print("OK")
         # ajout dans la variable RUNNING la liste des process lancés
         listRunning += "{} {} {}\n".format(result[0], result[1], result[2])
         nbOk += 1  # Comptage du nombre de process lancés
-    # print("####################")
 
 # on traite les résultats
 # si des éléments sont contenus dans la liste listError, on sort un statut CRITIQUE

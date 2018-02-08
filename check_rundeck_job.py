@@ -3,10 +3,22 @@ import logging
 import time
 from urllib import request as urllib2
 from xml.etree import ElementTree as ET
+from modules import centreon_status
+from modules import tessi_common
 
 #CONSTANTS
 RDK_ROOT_API_URL = 'http://10.33.1.53:8080/rundeck_production/api/'
 RDK_EXECUTIONS_EP = '1/job/$jobId/executions'
+EXECUTION_DAY = define_day("%w")
+EXECUTION_HOUR_MIN = 9
+EXECUTION_HOUR_MAX = 17
+
+#DEFINITION DE LA PERIODE D'EXECUTION DU SCRIPT --> A EXECUTER LE DIMANCHE DE 9H A 17H
+if EXECUTION_DAY != 0 and EXECUTION_HOUR_MIN <= int(define_now("%H")) <= EXECUTION_HOUR_MAX
+    status = "OK"
+    message = "Heure d'execution non atteinte"
+    centreon_status.exit(status, message)
+
 
 class Execution(object):
     def __init__(self, executionId, jobName, url, status, startedAt, failedNodes=[]):

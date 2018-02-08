@@ -76,7 +76,7 @@ def get_bin_python():
 def get_version_python():
     """ Méthode permettant de récupérer la version du binaire python
     """
-    bin_python = sys.version.split(" ", 1)[0]
+    version_python = sys.version.split(" ", 1)[0]
     return version_python
 
 

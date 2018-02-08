@@ -3,6 +3,7 @@
 
 """ Launch the supervisorctl for view status process
     2018-01-22 version 1: version initiale
+    2018-02-08 version 2: gestion python2 et python3
 """
 
 # import des modules

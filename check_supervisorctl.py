@@ -4,6 +4,7 @@
 """ Launch the supervisorctl for view status process
     2018-01-22 version 1: version initiale
     2018-02-08 version 2: gestion python2 et python3
+    2018-02-15 version 3: correction opérateur logique & en and
 """
 
 # import des modules
@@ -66,7 +67,7 @@ if nbError == nbProcess:
     status = "CRITICAL"
     message = "Tous les process sont arrêtés (" + str(nbError) + "/" + str(nbProcess) + ") à " + now + "!"
     detail = "Process KO:\n" + listError
-elif nbError > 0 & nbProcess > nbError:
+elif nbError > 0 and nbProcess > nbError:
     # s'il y a des erreurs mais en nombre inférieur au nombre total de process => WARNING
     status = "WARNING"
     message = str(nbError) + " process sur " + str(nbProcess) + " arrêté(s) à " + now + "!"

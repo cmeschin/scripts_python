@@ -67,10 +67,10 @@ if nbError == nbProcess:
     status = "CRITICAL"
     message = "Tous les process sont arrêtés (" + str(nbError) + "/" + str(nbProcess) + ") à " + now + "!"
     detail = "Process KO:\n" + listError
-elif nbError > 0 and nbProcess > nbError:
+elif nbError > 0 and nbError < nbProcess:
     # s'il y a des erreurs mais en nombre inférieur au nombre total de process => WARNING
     status = "WARNING"
-    message = str(nbError) + " process sur " + str(nbProcess) + " arrêté(s) à " + now + "!"
+    message = str(nbError) + " process arrêté(s) sur " + str(nbProcess) + " à " + now + "!"
     detail = "Process KO:\n" + listError + "Process OK:\n" + listRunning
 elif nbOk == nbProcess:
     status = "OK"

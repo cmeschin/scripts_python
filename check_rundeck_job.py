@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys, getopt
 import logging
 import time
@@ -9,14 +12,15 @@ from modules import tessi_common
 #CONSTANTS
 RDK_ROOT_API_URL = 'http://10.33.1.53:8080/rundeck_production/api/'
 RDK_EXECUTIONS_EP = '1/job/$jobId/executions'
-TODAY = tessi_common.define_today("%w")
-NOW = tessi_common.define_now("%H:%M")
+TODAY = int(tessi_common.define_today("%w"))
+NOW = int(tessi_common.define_now("%H%M"))
+HOUR = int(hour.replace(":",""))
 
 #TODO : check jour du job + check heure (arg day, hour) - pavé ci-dessous à reprendre:
 #DEFINITION DE LA PERIODE D'EXECUTION DU SCRIPT
-if day != TODAY or NOW < hour
+if day != TODAY or NOW < HOUR :
     status = "OK"
-    message = "Heure d'execution non atteinte"
+    message = "Heure " + hour + "d'execution non atteinte"
     centreon_status.exit(status, message)
 
 
@@ -83,7 +87,7 @@ def main(argv):
         elif opt in ("-w", "--warning"):
             warningThreshold = arg
         elif opt in ("-d", "--day"):
-            day = arg
+            day = int(arg)
         elif opt in ("-H", "--hour"):
             hour = arg
 

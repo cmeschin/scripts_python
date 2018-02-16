@@ -11,6 +11,7 @@ RDK_ROOT_API_URL = 'http://10.33.1.53:8080/rundeck_production/api/'
 RDK_EXECUTIONS_EP = '1/job/$jobId/executions'
 TODAY = tessi_common.define_today("%w")
 NOW = tessi_common.define_now("%H:%M")
+NOW_OUTPUT=tessi_common.define_now("%Hh%M")
 
 #TODO : check jour du job + check heure (arg day, hour) - pavé ci-dessous à reprendre:
 #DEFINITION DE LA PERIODE D'EXECUTION DU SCRIPT
@@ -61,7 +62,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "ha:c:j:i:ll:t:w:d:H:",["action=", "critical=", "job=", "limit=", "log-level=", "token=", "warning=","day=", "hour="])
     except getopt.GetoptError:
-        print('INCONNU: Cas non géré: executions.py -a <action> -j <jobId> -l <limit> -t <token> -d <day> -H <hour>')
+        print('INCONNU: Cas non géré: executions.py -a <action> -j <jobId> -l <limit> -t <token> -w <warning> -c <critical> -d <day> -H <hour>')
         sys.exit(3)
     for opt, arg in opts:
         if opt == '-h':
@@ -134,9 +135,28 @@ def main(argv):
             print ('WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) killed/aborted')
         elif runningsFound > 0:
             # TODO: calculer le temps d'exécution en fonction des seuils de temps
-            # TODO:	Implémenter la notion de job Running avec seuil warning / critique. (ie warning si > 5 heures, critique si > à 8 heures)
+            #calcul de la durée du job avec startedAt
+            duree = (NOW - Execution.startedAt).hours
+            if duree > criticalThreshold:
+                #durée supérieure au temps Critique
+                statut="CRITICAL"
+                message="Job " + currentJobName + " toujours en cours depuis " + Execution.startedAt + " à "+ NOW_OUTPUT + "."
+            elif duree > warningThreshold:
+                #durée supérieure au temps Critique
+                statut="WARNING"
+                message = "Job " + currentJobName + " encore en cours depuis " + Execution.startedAt + " à " + NOW_OUTPUT + "."
+            elif duree <= warningThreshold:
+                #durée d'alerte pas encore atteinte
+                statut="OK"
+                message= "Job " + currentJobName + " en cours depuis " + Execution.startedAt + " à " + NOW_OUTPUT + "."
+            else:
+                #cas non géré
+                statut="UNKNOWN"
+                message= "Cas non géré - JobName: " + currentJobName + "" \
+                                " HeureLancement: " + Execution.startedAt + " Duree: " + duree + "" \
+                                " Warning:" + warningThreshold + " Critique: " + criticalThreshold + "" \
+                                ". Notez ce message et contacter l'équipe centreon (centreon_tt@tessi.fr) pour analyse."
 
-            print ('WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) running')
         else:
             print ('OK - Aucune erreur pour le job ' + currentJobName)
             sys.exit(0)

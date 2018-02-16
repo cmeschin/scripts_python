@@ -1,8 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys, getopt
 import logging
 import time
 from urllib import request as urllib2
 from xml.etree import ElementTree as ET
+from modules import centreon_status
 
 #CONSTANTS
 RDK_ROOT_API_URL = 'http://10.33.1.53:8080/rundeck_production/api/'
@@ -114,13 +118,15 @@ def main(argv):
                     print (execution)
             sys.exit(2)
         elif warningsFound > 0:
-            #TODO: implémenter le code de sortie
+            #TODO: implémenter le code de sortie (VDN)
             print ('WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) killed/aborted')
+            status = "WARNING"
+            message = 'Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) killed/aborted'
+            centreon_status.exit(status, message)
+
         elif runningsFound > 0:
             # TODO: calculer le temps d'exécution en fonction des seuils de temps
             # TODO:	Implémenter la notion de job Running avec seuil warning / critique. (ie warning si > 5 heures, critique si > à 8 heures)
-
-            print ('WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) running')
         else:
             print ('OK - Aucune erreur pour le job ' + currentJobName)
             sys.exit(0)

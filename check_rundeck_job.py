@@ -9,12 +9,12 @@ from modules import tessi_common
 #CONSTANTS
 RDK_ROOT_API_URL = 'http://10.33.1.53:8080/rundeck_production/api/'
 RDK_EXECUTIONS_EP = '1/job/$jobId/executions'
-EXECUTION_DAY = define_day("%w")
-EXECUTION_HOUR_MIN = 9
-EXECUTION_HOUR_MAX = 17
+TODAY = tessi_common.define_today("%w")
+NOW = tessi_common.define_now("%H:%M")
 
-#DEFINITION DE LA PERIODE D'EXECUTION DU SCRIPT --> A EXECUTER LE DIMANCHE DE 9H A 17H
-if EXECUTION_DAY != 0 and EXECUTION_HOUR_MIN <= int(define_now("%H")) <= EXECUTION_HOUR_MAX
+#TODO : check jour du job + check heure (arg day, hour) - pavé ci-dessous à reprendre:
+#DEFINITION DE LA PERIODE D'EXECUTION DU SCRIPT
+if day != TODAY or NOW < hour
     status = "OK"
     message = "Heure d'execution non atteinte"
     centreon_status.exit(status, message)
@@ -59,9 +59,9 @@ def main(argv):
     authToken = ''
     jobId = ''
     try:
-        opts, args = getopt.getopt(argv,"ha:c:j:i:ll:t:w:",["action=","critical=","job=","limit=","log-level=","token=","warning="])
+        opts, args = getopt.getopt(argv, "ha:c:j:i:ll:t:w:d:H:",["action=", "critical=", "job=", "limit=", "log-level=", "token=", "warning=","day=", "hour="])
     except getopt.GetoptError:
-        print('INCONNU: Cas non géré: executions.py -a <action> -j <jobId> -l <limit> -t <token>')
+        print('INCONNU: Cas non géré: executions.py -a <action> -j <jobId> -l <limit> -t <token> -d <day> -H <hour>')
         sys.exit(3)
     for opt, arg in opts:
         if opt == '-h':
@@ -82,6 +82,10 @@ def main(argv):
             numeric_level = getattr(logging, logLevel.upper(), None)
         elif opt in ("-w", "--warning"):
             warningThreshold = arg
+        elif opt in ("-d", "--day"):
+            day = arg
+        elif opt in ("-H", "--hour"):
+            hour = arg
 
     if not 'logLevel' in locals():
         logLevel = 'DEBUG'

@@ -141,6 +141,7 @@ def main(argv):
             # TODO:	Implémenter la notion de job Running avec seuil warning / critique. (ie warning si > 5 heures, critique si > à 8 heures)
 
             print ('WARNING - Job ' + currentJobName + ' - ' + str(errorsFound) + ' execution(s) running')
+            sys.exit(0)
         else:
             print ('OK - Aucune erreur pour le job ' + currentJobName)
             sys.exit(0)

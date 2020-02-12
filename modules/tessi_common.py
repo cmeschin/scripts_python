@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import subprocess
 import sys
 import time
 
@@ -79,6 +80,16 @@ def get_version_python():
     version_python = sys.version.split(" ", 1)[0]
     return version_python
 
+def exec_command(cmd):
+    #récupération de la version de python
+    version = get_version_python()
+
+    # execution de la commande selon la version de python et récupération du retour dans une variable
+    if version[:1] == "2":
+        result_cmd = subprocess.check_output(cmd, shell=True)
+    elif version[:1] == "3":
+        result_cmd = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
+    return result_cmd
 
 if __name__ == "__main__":
     print("-- Module de gestion des classes et méthodes communes aux scripts tessi (format de date, "

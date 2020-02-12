@@ -22,9 +22,9 @@ import sys
         - la seconde ligne (optionnelle) indique le statut détaillé étendu
         - la troisième ligne (optionnelle) renvoie les données de performance (précédées d'un pipe "|")
 
-        <STATUT>: Message de sortie principal
-        message détaillé
-        | données de performance
+        <STATUT>: <MESSAGE>
+        <DETAIL>
+        | <PERFDATA>
 """
 
 
@@ -53,11 +53,11 @@ def define_state(status):
 def exit(status, message, detail="", perfdata=""):
     """ Fonction de renvoie du message à centreon"""
     exit_return = define_state(status)
+    if perfdata != "":
+        message += " | " + perfdata
     print(exit_return[0] + ': ' + message)
     if detail != "":
         print(detail)
-    if perfdata != "":
-        print(perfdata)
     sys.exit(exit_return[1])
 
 

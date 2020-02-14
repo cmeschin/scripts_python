@@ -6,11 +6,10 @@
     - check licencing
     2020-01-24 version 1: version initiale
     2020-02-12 version 2: Ajout mode flow
+    2020-02-14 version 3: correction gestion fichier pickle
+
+    TODO: variabiliser user/mdp
 """
-#definition des constantes
-VERSION = "2020-02-12 version 2"
-USERNAME = "publicring"
-PASSWORD = "nd7ja*!ja"
 
 import sys
 import getopt
@@ -18,24 +17,35 @@ import logging
 from modules import centreon_status
 from modules import tessi_common
 
-#Modules spécifiques
+# Modules spécifiques
 import os.path
 import pickle
 import requests
 
+# definition des constantes
+VERSION = "2020-02-14 version 3"
+USERNAME = "publicring"
+PASSWORD = "nd7ja*!ja"
+WORK_DIR = tessi_common.define_result_folder()
+STAT_FLOW = "riverbed_stat_flow.pkl"
+URL_RIVERBED = "https://riverbed-gateway.interne.tessi-techno.fr/api/gateway/1.5/stats"
+
 def stat_flow(exclude):
-    EXCLUDE = exclude
     nbErrors = 0
     # print("Mode non encore implémenté.")
     # sys.exit(0)
 
     # vérification de l'existence du fichier pickle
     dict = {}
-    if os.path.exists("pickle_stat_flow"):
-        dict = pickle.load(open('pickle_stat_flow', 'rb'))
+    if os.path.exists(WORK_DIR+STAT_FLOW):
+        try:
+            dict = pickle.load(open(WORK_DIR+STAT_FLOW, 'rb'))
+        except Exception as err:
+            print("ERREUR: Impossible d'ouvrir le fichier de stat {} ({})".format(WORK_DIR+STAT_FLOW, err))
+            sys.exit(3)
 
     # Récupération de la page
-    r = requests.get('https://riverbed-gateway.interne.tessi-techno.fr/api/gateway/1.5/stats', auth=(USERNAME, PASSWORD))
+    r = requests.get(URL_RIVERBED, auth=(USERNAME, PASSWORD))
 
     # reformatage du résultat par ligne
     result = r.text.split( "\n")
@@ -45,6 +55,7 @@ def stat_flow(exclude):
     for line in result:
         flow = ""
         ipaddr = ""
+        newLine = ""
 
         if "<flow_source flow_type" in line:
             values = line.split(" ")
@@ -55,16 +66,21 @@ def stat_flow(exclude):
                     updated = False
                     myvalue = value.split("=")
                     #print("myvalue:{}".format(myvalue))
+                    # reconstruction de la ligne
+                    newLine += " " + value
                     if myvalue[0] == "flows_received_last_min":
                         flow=int(value.split("=")[1].replace('"',''))
                     elif myvalue[0] == "ipaddr":
                         ipaddr=value.split("=")[1].replace('"','')
                         list_update.append(ipaddr)
-                        fullline[ipaddr] = line
+
                     #print("Liste update1: {}".format(list_update))
                     if flow != "" and ipaddr != "" and updated == True:
                         updated = False
                         #print("flow:{} {}".format(flow,ipaddr))
+
+                # mise en forme de la chaine (suppression de la balise <flow source .../>)
+                fullline[ipaddr] = newLine.strip()[13:-2]
                 # Ajout de l'IP dans le dictionnaire si elle n'existe pas déjà
                 if ipaddr not in dict:
                     #print("Ajout de l'adresse {}.".format(ipaddr))
@@ -73,49 +89,52 @@ def stat_flow(exclude):
 
                 if flow == 0 and ipaddr not in exclude:
                     # si pas de flow, on ajoute/incrémente dans le dictionnaire
-                    #print("ipaddr:{}".format(ipaddr))
-                    #print("exclude: {}".format(exclude))
+                    # print("ipaddr:{}".format(ipaddr))
+                    # print("exclude: {}".format(exclude))
                     nbcheck = dict.get(ipaddr)+1
-                    #print("nbcheck:{}".format(nbcheck))
+                    # print("nbcheck:{}".format(nbcheck))
                     dict[ipaddr] = nbcheck
-                    #print("dict:{}".format(dict[ipaddr]))
+                    # print("dict:{}".format(dict[ipaddr]))
                 else:
                     nbcheck = 0
                     dict[ipaddr] = nbcheck
     # Nettoyage du dictionnaire des ip qui n'existe plus
     del_ip = []
-    #print("Liste update: {}".format(list_update))
+    # print("Liste update: {}".format(list_update))
     for ip in dict.keys():
         if ip not in list_update:
             #print("IP: {}".format(ip))
             del_ip = list.append("{}".format(ip))
-            #print("Suppression de l'ip {}".format(ip))
+            # print("Suppression de l'ip {}".format(ip))
 
     for ip in del_ip:
         del dict[ip]
-        #print("Suppression de l'IP {} dans le dictionnaire.".format(ip))
+        # print("Suppression de l'IP {} dans le dictionnaire.".format(ip))
 
     # sauvegarde du résultat dans le fichier pickle
-    pickle.dump(dict, open('pickle_stat_flow', 'wb'))
+    try:
+        pickle.dump(dict, open(WORK_DIR+STAT_FLOW, 'wb'))
+    except IOError as err:
+        print("ERREUR: Impossible d'ecrire le fichier stat {} ({}).".format(WORK_DIR+STAT_FLOW, err))
+        sys.exit(3)
 
     # analyse du résultat
     # si une ou plusieurs IP sont à trois check ou plus on remonte l'alerte
     ipErrors = {}
     for cle,valeur in dict.items():
-        #print("Cle: {}, Valeur: {}, ipErrors: {}".format(cle, valeur,ipErrors))
+        # print("Cle: {}, Valeur: {}, ipErrors: {}".format(cle, valeur,ipErrors))
         if valeur >= 3:
-            #print("Cle {}".format(cle))
+            # print("Cle {}".format(cle))
             ipErrors[cle] = fullline[cle]
             nbErrors = nbErrors+1
-            #print("Ajout Error: {}".format(ipErrors[cle]))
+            # print("Ajout Error: {}".format(ipErrors[cle]))
 
     if nbErrors >= 1:
         status = "CRITICAL"
         message = "Le flow de {} équipement(s) est nul.".format(nbErrors)
         detail = "Liste des équipements concernés:\n"
         for cle,valeur in ipErrors.items():
-            detail += "{}: {}".format(cle, valeur)
-
+            detail += "{}: {}\n".format(cle, valeur)
         perfdata = ""
     else:
         status = "OK"
@@ -125,13 +144,12 @@ def stat_flow(exclude):
     centreon_status.exit(status, message, detail, perfdata)
 
 
-
-def stat_licencing(warning,critical):
+def stat_licencing(warning, critical):
 
     WARN = warning
     CRIT = critical
     # Récupération de la page
-    r = requests.get('https://riverbed-gateway.interne.tessi-techno.fr/api/gateway/1.5/stats', auth=(USERNAME, PASSWORD))
+    r = requests.get(URL_RIVERBED, auth=(USERNAME, PASSWORD))
 
     # reformatage du résultat par ligne
     result = r.text.split("\n")
@@ -139,8 +157,8 @@ def stat_licencing(warning,critical):
     # parcourir le résultat et stocker les valeurs de chaque ligne
     for line in result:
         if "<stats" in line:
-            #print(line)
-            #recupérer capacity et flows_received_last_min
+            # print(line)
+            # recupérer capacity et flows_received_last_min
             values = line.split(" ")
             # get capacity
             for value in values:
@@ -177,11 +195,16 @@ def stat_licencing(warning,critical):
         perfdata = "flow={};{};{};0;{}".format(flow, warn_flow, crit_flow, capacity)
     centreon_status.exit(status, message, detail, perfdata)
 
+
 def main(argv):
     mode = ''
     warning = 'NC'
     critical = 'NC'
     exclude = ""
+
+    # création du répertoire de travail
+    tessi_common.create_result_folder()
+
     try:
         opts, args = getopt.getopt(argv, "hm:w:c:v:e",["help", "version", "mode=", "warning=", "critical=", "exclude="])
     except getopt.GetoptError:
@@ -202,7 +225,6 @@ def main(argv):
             critical = arg
         elif opt in ("-e", "--exclude"):
             exclude = arg
-
 
     if mode == "licencing":
         try:
@@ -231,6 +253,7 @@ def main(argv):
         print("ERREUR: mode {} inconnu. Modes attendus: licencing ou flow uniquement.".format(mode))
         print("Script {} {}".format(sys.argv[0], VERSION))
         sys.exit(3)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

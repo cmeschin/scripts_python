@@ -55,9 +55,10 @@ def exit(status, message, detail="", perfdata=""):
     exit_return = define_state(status)
     if perfdata != "":
         message += " | " + perfdata
-    print(exit_return[0] + ': ' + message)
     if detail != "":
-        print(detail)
+        # print(detail)
+        message += "\n" + detail
+    print(exit_return[0] + ': ' + message)
     sys.exit(exit_return[1])
 
 

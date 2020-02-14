@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import os
 import subprocess
 import sys
 import time
@@ -14,7 +15,21 @@ import time
 """
     2018-02-08 version 1: version initiale
         - définition des fonctions basiques
+    2020-02-14 version 2:
+        - Ajout méthode create_result_folder
 """
+
+
+def create_result_folder():
+    """Méthode de création du dossier de travail selon la version de l'OS
+    """
+    newPath = define_result_folder()
+    if not os.path.exists(newPath):
+        try:
+            os.makedirs(newPath)
+        except IOError as err:
+            print("ERREUR: Impossible d'ecrire le fichier stat {} ({}).".format(newPath, err))
+            sys.exit(3)
 
 
 def define_result_folder():
@@ -22,9 +37,10 @@ def define_result_folder():
         selon la plateforme (Windows ou Linux)
     """
     if sys.platform == "win32":
-        return "C:/supervision/scripts/resultats/"
+        newPath = "C:/supervision/scripts/resultats/"
     else:
-        return "/supervision/resultats/"
+        newPath = "/supervision/resultats/"
+    return newPath
 
 
 def define_now(format="%Hh%M"):
@@ -80,8 +96,10 @@ def get_version_python():
     version_python = sys.version.split(" ", 1)[0]
     return version_python
 
+
 def exec_command(cmd):
-    #récupération de la version de python
+    """Méthode de récupération de la version de python
+    """
     version = get_version_python()
 
     # execution de la commande selon la version de python et récupération du retour dans une variable
@@ -90,6 +108,7 @@ def exec_command(cmd):
     elif version[:1] == "3":
         result_cmd = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
     return result_cmd
+
 
 if __name__ == "__main__":
     print("-- Module de gestion des classes et méthodes communes aux scripts tessi (format de date, "

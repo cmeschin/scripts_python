@@ -32,6 +32,7 @@ pip-log.txt
 # dossier et fichiers à ignorer
 __pycache__/*
 modules/__pycache__/*
+pickle_stat_flow
 
 =======
 #################

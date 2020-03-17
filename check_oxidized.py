@@ -59,7 +59,7 @@ def main(argv):
     statsResult = get_stats(URL)
     for obj in statsResult:
         if obj["supervision"] == "oui" and obj["last"]["status"] == "no_connection":
-            dictListSwitch[obj["name"]] = str(obj["name"]) + " " + str(obj["ip"]) + ": dernier statut " + str([obj["last"]["status"]]) + " le " + str(obj["last"]["end"]) + "."
+            dictListSwitch[obj["name"]] = str(obj["name"]) + " " + str(obj["ip"]) + ": dernier statut [" + str(obj["last"]["status"]) + "] le " + str(obj["last"]["end"]) + "."
         elif obj["supervision"] == "non":
             dictListExclu[obj["name"]] = obj["name"] + " " + obj["ip"]
 

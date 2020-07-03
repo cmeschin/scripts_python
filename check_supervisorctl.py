@@ -32,7 +32,7 @@ now = tessi_common.define_now()
 # beemessenger:prod_logidoc_beemessenger_esendex RUNNING    pid 12480, uptime 4:13:53
 # filebeat                         STOPPED    Not started
 
-#récupération de la version de python
+# récupération de la version de python
 version = tessi_common.get_version_python()
 
 # execution de la commande selon la version de python et récupération du retour dans une variable

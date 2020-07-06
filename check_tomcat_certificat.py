@@ -8,6 +8,7 @@
     2020-06-29 version 1: version initiale
     2020-07-03 version 2: ajout de l'alias dans le message de retour
     2020-07-06 version 3: Correction gestion stdout (intégration dans tessi_common)
+                        Prise en compte des arguments facultatifs vides
 """
 import sys
 import getopt
@@ -84,7 +85,7 @@ def expiration(alias, password, warning, critical, keystore, keytool):
 def main(argv):
     mode = ''
     alias = ''
-    password = ''
+    password = 'changeit'
     warning = '30'
     critical = '10'
     keystore = "D:/Docubase/server/jre/lib/security/jssecacerts"
@@ -121,15 +122,20 @@ def main(argv):
         elif opt in ("-a", "--alias"):
             alias = arg
         elif opt in ("-p", "--password"):
-            password = arg
+            if arg != "":
+                password = arg
         elif opt in ("-w", "--warning"):
-            warning = arg
+            if arg != "":
+                warning = arg
         elif opt in ("-c", "--critical"):
-            critical = arg
+            if arg != "":
+                critical = arg
         elif opt in ("-k", "--keystore"):
-            keystore = arg
+            if arg != "":
+                keystore = arg
         elif opt in ("-K", "--keytool"):
-            keytool = arg
+            if arg != "":
+                keytool = arg
 
     if mode == "expiration":
         try:

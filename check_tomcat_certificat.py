@@ -7,6 +7,7 @@
 
     2020-06-29 version 1: version initiale
     2020-07-03 version 2: ajout de l'alias dans le message de retour
+    2020-07-06 version 3: Correction gestion stdout (intégration dans tessi_common)
 """
 import sys
 import getopt
@@ -18,7 +19,7 @@ from datetime import datetime
 
 
 # definition des constantes
-VERSION = "2020-07-03 version 2"
+VERSION = "2020-07-06 version 3"
 
 
 def expiration(alias, password, warning, critical, keystore, keytool):
@@ -33,9 +34,9 @@ def expiration(alias, password, warning, critical, keystore, keytool):
     # print(today)
     CMD = keytool + " -list -v -alias \"" + alias + "\" -keystore " + keystore + " -storepass " + password
     tessi_common.exec_command(CMD)
-    result_cmd = tessi_common.exec_command(CMD)
+    result_cmd, result_cmd_stdout = tessi_common.exec_command(CMD)
     # conversion du retour stdout en liste
-    lstResult = str(result_cmd.stdout)[2:-3].split("\\n")
+    lstResult = result_cmd_stdout.split("\\n")
     for element in lstResult:
         # print(element)
         # exemple: Valid from: Wed Apr 29 11:24:01 CEST 2020 until: Thu Apr 29 11:24:01 CEST 2021

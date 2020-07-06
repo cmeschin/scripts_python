@@ -17,6 +17,8 @@ import time
         - définition des fonctions basiques
     2020-02-14 version 2:
         - Ajout méthode create_result_folder
+    2020-07-06 version 3:
+        - intégration dans exec_command de la sortie stdout en fonction de la version de python
 """
 
 
@@ -98,16 +100,23 @@ def get_version_python():
 
 
 def exec_command(cmd):
-    """Méthode de récupération de la version de python
+    """Méthode d'exécution de commande en fonction de la version de python
+    :return:
+        result_cmd: raw output
+        result_cmd_stdout: only stdout output
     """
+    result_cmd = ""
+    result_cmd_stdout = ""
     version = get_version_python()
 
     # execution de la commande selon la version de python et récupération du retour dans une variable
     if version[:1] == "2":
         result_cmd = subprocess.check_output(cmd, shell=True)
+        result_cmd_stdout = str(result_cmd)[:-3]
     elif version[:1] == "3":
         result_cmd = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
-    return result_cmd
+        result_cmd_stdout = str(result_cmd.stdout)[2:-3]
+    return result_cmd, result_cmd_stdout
 
 
 if __name__ == "__main__":
